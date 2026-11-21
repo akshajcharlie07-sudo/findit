@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge, empty_state, item_thumb with context %}
+{% block title %}My Claims{% endblock %}
+{% block content %}
+<section class="container page-section">
+  <div class="page-head"><h1>My claims</h1><p class="text-muted">Track the status of every claim you've submitted.</p></div>
+  {% for c in claims %}
+  <div class="panel claim-row mb-3">
+    <div class="mini-thumb big">{{ item_thumb({'has_image':c.has_image,'id':c.item_id,'title':c.title,'category_icon':c.category_icon}) }}</div>
+    <div class="flex-grow-1">
+      <div class="d-flex justify-content-between flex-wrap gap-2"><h5 class="mb-1"><a href="{{ url_for('item_details', item_id=c.item_id) }}">{{ c.title }}</a></h5>{{ status_badge(c.status) }}</div>
+      <div class="item-meta"><i class="bi bi-geo-alt"></i> {{ c.location }} &nbsp; <i class="bi bi-clock"></i> Submitted {{ c.created_at|timeago }}</div>
+      <div class="claim-quote"><strong>Your details:</strong> {{ c.identifying_info }}</div>
+      {% if c.admin_note %}<div class="admin-note"><i class="bi bi-chat-left-text"></i> <strong>Admin:</strong> {{ c.admin_note }}</div>{% endif %}
+      {% if c.status == 'approved' %}<div class="alert alert-success py-2 mt-2 mb-0"><i class="bi bi-check-circle-fill"></i> Approved! Visit the campus admin office with your student ID to collect the item.</div>{% endif %}
+    </div>
+  </div>
+  {% else %}
+  {{ empty_state('bi-shield-check','No claims yet',"When you spot something that belongs to you, submit a claim from the item's page.",'Browse found items',url_for('browse_items', type='found')) }}
+  {% endfor %}
+</section>
+{% endblock %}

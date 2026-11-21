@@ -1,0 +1,13 @@
+{% from "_macros.html" import item_card, empty_state with context %}
+<div class="results-count" data-total="{{ total }}">{{ total }} result{{ '' if total==1 else 's' }}</div>
+<div class="row g-4">
+  {% for item in items %}{{ item_card(item) }}
+  {% else %}<div class="col-12">{{ empty_state('bi-search','No matching items','Try a different keyword or clear some filters. You can also report the item yourself.','Report lost item',url_for('report_lost')) }}</div>{% endfor %}
+</div>
+{% if pages > 1 %}
+<nav class="mt-5"><ul class="pagination justify-content-center">
+  <li class="page-item {{ 'disabled' if page==1 }}"><a class="page-link" href="{{ url_for('browse_items', page=page-1, **args) }}">&laquo;</a></li>
+  {% for p in range(1, pages+1) %}<li class="page-item {{ 'active' if p==page }}"><a class="page-link" href="{{ url_for('browse_items', page=p, **args) }}">{{ p }}</a></li>{% endfor %}
+  <li class="page-item {{ 'disabled' if page==pages }}"><a class="page-link" href="{{ url_for('browse_items', page=page+1, **args) }}">&raquo;</a></li>
+</ul></nav>
+{% endif %}

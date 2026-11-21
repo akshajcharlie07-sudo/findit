@@ -1,0 +1,6 @@
+<div class="admin-tabs">
+  <a class="{{ 'active' if request.endpoint=='admin_dashboard' }}" href="{{ url_for('admin_dashboard') }}"><i class="bi bi-speedometer2"></i> Overview</a>
+  <a class="{{ 'active' if request.endpoint=='admin_claims' }}" href="{{ url_for('admin_claims') }}"><i class="bi bi-shield-check"></i> Claims</a>
+  <a class="{{ 'active' if request.endpoint=='admin_items' }}" href="{{ url_for('admin_items') }}"><i class="bi bi-boxes"></i> Reports</a>
+  <a class="{{ 'active' if request.endpoint=='admin_users' }}" href="{{ url_for('admin_users') }}"><i class="bi bi-people"></i> Users</a>
+</div>

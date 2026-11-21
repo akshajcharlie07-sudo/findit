@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Report Found Item{% endblock %}
+{% block content %}
+{% set kind='found' %}{% set heading='Report a found item' %}{% set subheading="Thanks for helping! Describe the item but leave out details only the real owner would know (serial numbers, contents)." %}
+{% set desc_hint='General appearance, colour, brand…' %}{% set location_label='Where did you find it' %}{% set date_label='Date found' %}{% set submit_text='Submit found report' %}
+{% include "_report_form.html" %}
+{% endblock %}

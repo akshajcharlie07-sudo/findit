@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, empty_state with context %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<section class="container page-section"><div class="row justify-content-center"><div class="col-lg-8">
+  <div class="d-flex justify-content-between align-items-end page-head"><h1>Notifications</h1>
+    {% if unread_count %}<form method="post">{{ csrf() }}<button class="btn btn-outline-navy btn-sm">Mark all as read</button></form>{% endif %}</div>
+  <div class="panel">
+    {% for n in notes %}<a class="note-item {{ '' if n.is_read else 'unread' }}" href="{{ n.link or '#' }}"><span>{{ n.message }}</span><small>{{ n.created_at|timeago }}</small></a>
+    {% else %}{{ empty_state('bi-bell','No notifications','Updates about your claims and reports will appear here.') }}{% endfor %}
+  </div>
+</div></div></section>
+{% endblock %}

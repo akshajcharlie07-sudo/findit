@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Browse Items{% endblock %}
+{% block content %}
+<section class="container page-section">
+  <div class="page-head"><h1>Browse items</h1><p class="text-muted">Search every lost and found report on campus.</p></div>
+  <form id="filterForm" class="filter-bar" method="get" action="{{ url_for('browse_items') }}">
+    <div class="row g-2">
+      <div class="col-lg-3"><div class="input-icon"><i class="bi bi-search"></i><input type="text" name="q" class="form-control" placeholder="Search by name…" value="{{ q }}"></div></div>
+      <div class="col-6 col-lg-2"><select name="category" class="form-select"><option value="">All categories</option>{% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if category==c.id }}>{{ c.name }}</option>{% endfor %}</select></div>
+      <div class="col-6 col-lg-2"><select name="type" class="form-select"><option value="">Lost &amp; found</option><option value="lost" {{ 'selected' if typ=='lost' }}>Lost</option><option value="found" {{ 'selected' if typ=='found' }}>Found</option></select></div>
+      <div class="col-6 col-lg-2"><input type="text" name="location" class="form-control" placeholder="Location" value="{{ location }}"></div>
+      <div class="col-6 col-lg-2"><select name="status" class="form-select"><option value="active" {{ 'selected' if status=='active' }}>Active</option><option value="returned" {{ 'selected' if status=='returned' }}>Returned</option><option value="all" {{ 'selected' if status=='all' }}>All</option></select></div>
+      <div class="col-lg-1 d-grid"><a href="{{ url_for('browse_items') }}" class="btn btn-outline-secondary" title="Clear filters"><i class="bi bi-x-lg"></i></a></div>
+    </div>
+  </form>
+  <div id="resultsArea">{% include "_items_grid.html" %}</div>
+</section>
+{% endblock %}

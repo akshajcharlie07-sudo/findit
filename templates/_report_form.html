@@ -1,0 +1,24 @@
+{% from "_macros.html" import csrf, field_error with context %}
+<section class="container page-section">
+  <div class="row justify-content-center"><div class="col-lg-8">
+    <div class="page-head"><span class="type-pill type-{{ kind }} static">{{ kind|capitalize }}</span><h1>{{ heading }}</h1><p class="text-muted">{{ subheading }}</p></div>
+    <div class="panel form-panel">
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {{ csrf() }}
+        <div class="row g-3">
+          <div class="col-md-7"><label class="form-label">Item name *</label><input name="title" class="form-control {{ 'is-invalid' if errors.title }}" maxlength="80" value="{{ form.get('title','') }}" placeholder="e.g. Black wireless earbuds">{{ field_error(errors,'title') }}</div>
+          <div class="col-md-5"><label class="form-label">Category *</label>
+            <select name="category_id" class="form-select {{ 'is-invalid' if errors.category_id }}"><option value="">Select…</option>
+              {% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if form.get('category_id')|string == c.id|string }}>{{ c.name }}</option>{% endfor %}</select>{{ field_error(errors,'category_id') }}</div>
+          <div class="col-12"><label class="form-label">Description *</label><textarea name="description" rows="4" maxlength="1000" class="form-control {{ 'is-invalid' if errors.description }}" placeholder="{{ desc_hint }}">{{ form.get('description','') }}</textarea>{{ field_error(errors,'description') }}</div>
+          <div class="col-md-7"><label class="form-label">{{ location_label }} *</label><input name="location" class="form-control {{ 'is-invalid' if errors.location }}" maxlength="100" value="{{ form.get('location','') }}" placeholder="e.g. Main Library, 2nd floor">{{ field_error(errors,'location') }}</div>
+          <div class="col-md-5"><label class="form-label">{{ date_label }} *</label><input type="date" name="date_event" max="{{ today }}" class="form-control {{ 'is-invalid' if errors.date_event }}" value="{{ form.get('date_event', today) }}">{{ field_error(errors,'date_event') }}</div>
+          <div class="col-12"><label class="form-label">Photo <span class="text-muted">(optional, max 4 MB)</span></label>
+            <label class="upload-box" for="imageInput"><i class="bi bi-cloud-arrow-up"></i><span id="uploadText">Click to choose an image (PNG, JPG, WEBP)</span><img id="imagePreview" alt="" hidden></label>
+            <input type="file" id="imageInput" name="image" accept=".png,.jpg,.jpeg,.webp,image/*" hidden>{{ field_error(errors,'image') }}</div>
+        </div>
+        <div class="d-flex gap-2 mt-4"><button class="btn btn-navy btn-lg px-4">{{ submit_text }}</button><a href="{{ url_for('browse_items') }}" class="btn btn-outline-secondary btn-lg">Cancel</a></div>
+      </form>
+    </div>
+  </div></div>
+</section>

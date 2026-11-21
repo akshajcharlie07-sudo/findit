@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_badge with context %}
+{% block title %}Admin Overview{% endblock %}
+{% block content %}
+<section class="container page-section">
+  <div class="page-head"><span class="eyebrow">Administration</span><h1>Admin panel</h1></div>
+  {% include "admin/_nav.html" %}
+  <div class="row g-3 mb-4">
+    {% for label, val, icon, cls in [('Registered students',stats.users,'bi-people','navy'),('Total reports',stats['items'],'bi-collection','navy'),('Lost reports',stats.lost,'bi-exclamation-circle','lost'),('Found reports',stats.found,'bi-hand-thumbs-up','found'),('Pending claims',stats.pending,'bi-hourglass-split','warn'),('Items returned',stats.returned,'bi-patch-check','found')] %}
+    <div class="col-6 col-lg-2"><div class="stat-card stat-{{ cls }} stacked"><i class="bi {{ icon }}"></i><strong data-count="{{ val }}">{{ val }}</strong><span>{{ label }}</span></div></div>
+    {% endfor %}
+  </div>
+  <div class="row g-4">
+    <div class="col-lg-6"><div class="panel"><h5 class="mb-3">Reports by category</h5>
+      {% set mx = (by_cat|map(attribute='total')|max) or 1 %}
+      {% for c in by_cat %}<div class="bar-row"><span><i class="bi {{ c.icon }}"></i> {{ c.name }}</span><div class="bar"><div style="width: {{ (c.total / mx * 100)|round|int }}%"></div></div><b>{{ c.total }}</b></div>{% endfor %}
+    </div></div>
+    <div class="col-lg-6"><div class="panel mb-4"><div class="d-flex justify-content-between mb-2"><h5 class="mb-0">Claims awaiting review</h5><a href="{{ url_for('admin_claims') }}" class="small fw-semibold">Open</a></div>
+      {% for c in pending_claims %}<a class="note-item unread" href="{{ url_for('admin_claims') }}"><span><strong>{{ c.full_name }}</strong> claimed <em>{{ c.title }}</em></span><small>{{ c.created_at|timeago }}</small></a>{% else %}<p class="text-muted small mb-0">No pending claims 🎉</p>{% endfor %}</div>
+      <div class="panel"><div class="d-flex justify-content-between mb-2"><h5 class="mb-0">Latest reports</h5><a href="{{ url_for('admin_items') }}" class="small fw-semibold">Manage</a></div>
+      {% for i in recent_items %}<a class="note-item" href="{{ url_for('item_details', item_id=i.id) }}"><span>{{ i.title }} <small class="text-muted">· {{ i.type }}</small></span><small>{{ i.created_at|timeago }}</small></a>{% endfor %}</div>
+    </div>
+  </div>
+</section>
+{% endblock %}

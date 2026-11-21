@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Report Lost Item{% endblock %}
+{% block content %}
+{% set kind='lost' %}{% set heading='Report a lost item' %}{% set subheading="Tell us what you lost. The more detail, the better the chance someone recognises it." %}
+{% set desc_hint='Colour, brand, size, distinguishing marks…' %}{% set location_label='Where did you lose it' %}{% set date_label='Date lost' %}{% set submit_text='Submit lost report' %}
+{% include "_report_form.html" %}
+{% endblock %}

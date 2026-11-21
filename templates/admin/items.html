@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, status_badge with context %}
+{% block title %}Admin · Reports{% endblock %}
+{% block content %}
+<section class="container page-section">
+  <div class="page-head"><span class="eyebrow">Administration</span><h1>All reports</h1></div>
+  {% include "admin/_nav.html" %}
+  <form class="filter-bar mb-3" method="get"><div class="row g-2">
+    <div class="col-md-4"><div class="input-icon"><i class="bi bi-search"></i><input name="q" class="form-control" placeholder="Search item or reporter" value="{{ q }}"></div></div>
+    <div class="col-6 col-md-2"><select name="type" class="form-select"><option value="">All types</option><option value="lost" {{ 'selected' if typ=='lost' }}>Lost</option><option value="found" {{ 'selected' if typ=='found' }}>Found</option></select></div>
+    <div class="col-6 col-md-3"><select name="status" class="form-select"><option value="">All statuses</option>{% for s in statuses %}<option value="{{ s }}" {{ 'selected' if status==s }}>{{ s|replace('_',' ')|capitalize }}</option>{% endfor %}</select></div>
+    <div class="col-auto"><button class="btn btn-navy">Filter</button></div></div></form>
+  <div class="panel p-0"><div class="table-responsive"><table class="table table-findit align-middle mb-0">
+    <thead><tr><th>Item</th><th>Type</th><th>Reporter</th><th>Reported</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+    <tbody>{% for i in items %}<tr>
+      <td><a href="{{ url_for('item_details', item_id=i.id) }}" class="fw-semibold">{{ i.title }}</a><div class="small text-muted">{{ i.category_name }} · {{ i.location }}</div></td>
+      <td><span class="type-pill type-{{ i.type }} static">{{ i.type|capitalize }}</span></td><td>{{ i.reporter }}</td><td class="small">{{ i.created_at|timeago }}</td>
+      <td><form method="post" action="{{ url_for('admin_item_status', item_id=i.id) }}" class="d-flex gap-1">{{ csrf() }}<input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+        <select name="status" class="form-select form-select-sm status-select">{% for s in statuses %}<option value="{{ s }}" {{ 'selected' if i.status==s }}>{{ s|replace('_',' ')|capitalize }}</option>{% endfor %}</select><button class="btn btn-sm btn-outline-navy" title="Update status"><i class="bi bi-check2"></i></button></form></td>
+      <td class="text-end"><form method="post" action="{{ url_for('delete_item', item_id=i.id) }}" onsubmit="return confirm('Delete this report permanently?');">{{ csrf() }}<input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}"><button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete</button></form></td>
+    </tr>{% else %}<tr><td colspan="6" class="text-center text-muted py-4">No reports match your filters.</td></tr>{% endfor %}</tbody></table></div></div>
+</section>
+{% endblock %}

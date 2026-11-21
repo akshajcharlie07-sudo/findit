@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, status_badge, item_card, item_thumb with context %}
+{% block title %}{{ item.title }}{% endblock %}
+{% block content %}
+<section class="container page-section">
+  <nav class="crumbs"><a href="{{ url_for('browse_items') }}"><i class="bi bi-arrow-left"></i> Back to browse</a></nav>
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="panel p-0 overflow-hidden">
+        <div class="detail-media">{{ item_thumb(item) }}<span class="type-pill type-{{ item.type }}">{{ item.type|capitalize }}</span></div>
+        <div class="p-4">
+          <div class="d-flex justify-content-between flex-wrap gap-2 align-items-start">
+            <h1 class="detail-title">{{ item.title }}</h1>{{ status_badge(item.status) }}
+          </div>
+          <p class="detail-desc">{{ item.description }}</p>
+          <div class="row g-3 detail-facts">
+            <div class="col-sm-6"><i class="bi {{ item.category_icon }}"></i><span>Category</span><strong>{{ item.category_name }}</strong></div>
+            <div class="col-sm-6"><i class="bi bi-geo-alt"></i><span>{{ 'Lost at' if item.type=='lost' else 'Found at' }}</span><strong>{{ item.location }}</strong></div>
+            <div class="col-sm-6"><i class="bi bi-calendar3"></i><span>{{ 'Date lost' if item.type=='lost' else 'Date found' }}</span><strong>{{ item.date_event|fdate }}</strong></div>
+            <div class="col-sm-6"><i class="bi bi-person"></i><span>Reported by</span><strong>{{ item.reporter }}</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="panel" id="claim">
+        {% if item.type == 'lost' %}
+          <h4><i class="bi bi-lightbulb text-teal"></i> Found this item?</h4>
+          <p class="text-muted">If you've found something that matches this description, report it so the owner can claim it.</p>
+          <a href="{{ url_for('report_found') }}" class="btn btn-teal w-100">Report a found item</a>
+        {% elif is_owner %}
+          <h4><i class="bi bi-person-check text-teal"></i> This is your report</h4>
+          <p class="text-muted">{{ claim_count }} claim{{ '' if claim_count==1 else 's' }} submitted. An administrator reviews every claim before handing the item over.</p>
+        {% elif my_claim %}
+          <h4><i class="bi bi-hourglass-split text-teal"></i> You've claimed this item</h4>
+          <p>Status: {{ status_badge(my_claim.status) }}</p>
+          <a href="{{ url_for('my_claims') }}" class="btn btn-outline-navy w-100">Track my claim</a>
+        {% elif item.status == 'returned' %}
+          <h4><i class="bi bi-patch-check text-teal"></i> Returned to its owner</h4><p class="text-muted mb-0">This item has been successfully returned.</p>
+        {% elif item.status == 'closed' %}
+          <h4>Report closed</h4><p class="text-muted mb-0">This report is no longer active.</p>
+        {% elif can_claim %}
+          <h4><i class="bi bi-shield-lock text-teal"></i> This is mine</h4>
+          <p class="text-muted small">Describe details only the owner would know (marks, contents, serial number, wallpaper…). This is <strong>never shown publicly</strong> – only administrators see it.</p>
+          <form method="post" action="{{ url_for('submit_claim', item_id=item.id) }}">
+            {{ csrf() }}
+            <div class="mb-3"><label class="form-label">Identifying details *</label><textarea name="identifying_info" rows="4" class="form-control" minlength="15" maxlength="1000" required placeholder="e.g. There is a crack on the back and my initials 'AS' inside the cover."></textarea></div>
+            <div class="mb-3"><label class="form-label">Message to admin <span class="text-muted">(optional)</span></label><textarea name="message" rows="2" class="form-control" maxlength="500" placeholder="When can you collect it?"></textarea></div>
+            <button class="btn btn-navy w-100">Submit claim</button>
+          </form>
+        {% elif not g.user %}
+          <h4><i class="bi bi-shield-lock text-teal"></i> Is this yours?</h4>
+          <p class="text-muted">Log in to submit a claim with private identifying details.</p>
+          <a href="{{ url_for('login', next=request.path) }}" class="btn btn-navy w-100">Log in to claim</a>
+        {% endif %}
+      </div>
+
+      {% if g.user and (is_owner or g.user['role']=='admin') %}
+      <div class="panel mt-3">
+        <h6 class="mb-3">Manage</h6>
+        <form method="post" action="{{ url_for('delete_item', item_id=item.id) }}" onsubmit="return confirm('Delete this report permanently?');">
+          {{ csrf() }}<input type="hidden" name="next" value="{{ url_for('dashboard') }}">
+          <button class="btn btn-outline-danger w-100"><i class="bi bi-trash"></i> Delete report</button>
+        </form>
+        {% if g.user['role']=='admin' %}<a href="{{ url_for('admin_claims') }}" class="btn btn-outline-navy w-100 mt-2">Review claims</a>{% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if similar %}
+  <div class="mt-5">
+    <h3 class="mb-3">Possible {{ 'matches' }} <small class="text-muted fs-6">– {{ 'found' if item.type=='lost' else 'lost' }} items in the same category</small></h3>
+    <div class="row g-4">{% for s in similar %}{{ item_card(s) }}{% endfor %}</div>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

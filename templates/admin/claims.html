@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, status_badge, empty_state with context %}
+{% block title %}Admin · Claims{% endblock %}
+{% block content %}
+<section class="container page-section">
+  <div class="page-head"><span class="eyebrow">Administration</span><h1>Claim requests</h1></div>
+  {% include "admin/_nav.html" %}
+  <ul class="nav nav-pills pill-filter mb-4">
+    {% for s,l in [('pending','Pending'),('approved','Approved'),('rejected','Rejected'),('all','All')] %}<li class="nav-item"><a class="nav-link {{ 'active' if status==s }}" href="{{ url_for('admin_claims', status=s) }}">{{ l }}</a></li>{% endfor %}
+  </ul>
+  {% for c in claims %}
+  <div class="panel mb-3">
+    <div class="d-flex justify-content-between flex-wrap gap-2 mb-3">
+      <div><h5 class="mb-0"><a href="{{ url_for('item_details', item_id=c.item_id) }}">{{ c.title }}</a></h5><small class="text-muted">{{ c.location }} · claim submitted {{ c.created_at|timeago }}</small></div>{{ status_badge(c.status) }}
+    </div>
+    <div class="row g-3">
+      <div class="col-lg-4"><div class="verify-box"><h6>Claimant</h6><strong>{{ c.full_name }}</strong><br><small>{{ c.email }}<br>ID: {{ c.student_id }}{% if c.phone %}<br>📞 {{ c.phone }}{% endif %}</small></div></div>
+      <div class="col-lg-4"><div class="verify-box"><h6>Public listing</h6><small>{{ c.item_description }}</small></div></div>
+      <div class="col-lg-4"><div class="verify-box private"><h6><i class="bi bi-lock"></i> Private details from claimant</h6><small>{{ c.identifying_info }}</small>{% if c.message %}<hr class="my-2"><small class="text-muted">Message: {{ c.message }}</small>{% endif %}</div></div>
+    </div>
+    {% if c.status == 'pending' %}
+    <form method="post" action="{{ url_for('admin_review_claim', claim_id=c.id) }}" class="mt-3">
+      {{ csrf() }}<input type="hidden" name="back" value="{{ status if status != 'all' else 'pending' }}">
+      <div class="row g-2 align-items-end"><div class="col-lg-7"><label class="form-label small mb-1">Note to claimant (optional)</label><input name="admin_note" class="form-control" maxlength="300" placeholder="e.g. Verified in person / details did not match"></div>
+        <div class="col-lg-5 d-flex gap-2"><button name="action" value="approve" class="btn btn-success flex-fill"><i class="bi bi-check-lg"></i> Approve</button><button name="action" value="reject" class="btn btn-outline-danger flex-fill"><i class="bi bi-x-lg"></i> Reject</button></div></div>
+    </form>
+    {% else %}<div class="admin-note mt-3"><i class="bi bi-chat-left-text"></i> {{ c.admin_note or 'No note.' }} <small class="text-muted">— {{ c.reviewer or 'Admin' }}, {{ c.reviewed_at|fdate }}</small></div>{% endif %}
+  </div>
+  {% else %}{{ empty_state('bi-shield-check','No claims here','Nothing to review in this category right now.') }}{% endfor %}
+</section>
+{% endblock %}

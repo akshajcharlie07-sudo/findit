@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% from "_macros.html" import item_card, empty_state, item_thumb, status_badge with context %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center gy-5">
+      <div class="col-lg-7">
+        <span class="hero-badge"><i class="bi bi-stars"></i> Smart Campus Lost &amp; Found</span>
+        <h1>Lost something on campus?<br><span class="text-teal">Let's find it.</span></h1>
+        <p class="hero-sub">Report lost belongings, post items you've found and securely claim what's yours — all verified by campus administrators.</p>
+        <form action="{{ url_for('browse_items') }}" method="get" class="hero-search">
+          <i class="bi bi-search"></i>
+          <input type="text" name="q" placeholder="Search for an ID card, earbuds, wallet…" aria-label="Search items">
+          <button class="btn btn-teal">Search</button>
+        </form>
+        <div class="hero-actions">
+          <a href="{{ url_for('report_lost') }}" class="btn btn-light-outline"><i class="bi bi-exclamation-circle"></i> I lost something</a>
+          <a href="{{ url_for('report_found') }}" class="btn btn-light-outline"><i class="bi bi-hand-thumbs-up"></i> I found something</a>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="hero-panel">
+          <div class="hero-panel-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span> Live platform activity</div>
+          <div class="hero-stat"><i class="bi bi-box-seam"></i><div><strong data-count="{{ stats['items'] }}">{{ stats['items'] }}</strong><span>Items reported</span></div></div>
+          <div class="hero-stat"><i class="bi bi-patch-check"></i><div><strong data-count="{{ stats.returned }}">{{ stats.returned }}</strong><span>Items returned to owners</span></div></div>
+          <div class="hero-stat"><i class="bi bi-people"></i><div><strong data-count="{{ stats.users }}">{{ stats.users }}</strong><span>Students on the platform</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head text-center reveal"><span class="eyebrow">How it works</span><h2>Reunite with your belongings in four steps</h2></div>
+    <div class="row g-4">
+      {% for icon, t, d in [('bi-pencil-square','Report','Post a lost or found item with photo, location and date.'),('bi-search','Search','Browse and filter the portal to spot a match.'),('bi-shield-lock','Claim','Submit private identifying details to prove ownership.'),('bi-check2-circle','Recover','An admin verifies your claim and arranges the return.')] %}
+      <div class="col-md-6 col-lg-3 reveal"><div class="step-card"><div class="step-num">{{ loop.index }}</div><div class="step-icon"><i class="bi {{ icon }}"></i></div><h5>{{ t }}</h5><p>{{ d }}</p></div></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-4 reveal">
+      <div><span class="eyebrow">Latest</span><h2 class="mb-0">Recently reported items</h2></div>
+      <a href="{{ url_for('browse_items') }}" class="btn btn-outline-navy">View all <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <div class="row g-4">
+      {% for item in recent %}{{ item_card(item) }}
+      {% else %}<div class="col-12">{{ empty_state('bi-inbox','No items yet','Be the first to report a lost or found item.','Report an item',url_for('report_found')) }}</div>{% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head text-center reveal"><span class="eyebrow">Categories</span><h2>Browse by category</h2></div>
+    <div class="row g-3">
+      {% for c in categories %}
+      <div class="col-6 col-md-4 col-lg-3 reveal">
+        <a href="{{ url_for('browse_items', category=c.id) }}" class="cat-card"><i class="bi {{ c.icon }}"></i><div><strong>{{ c.name }}</strong><span>{{ c.total }} item{{ '' if c.total==1 else 's' }}</span></div></a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <div class="row g-4">
+      {% for title, kind, rows, color in [('Recently lost','lost',lost,'lost'),('Recently found','found',found,'found')] %}
+      <div class="col-lg-6 reveal">
+        <div class="panel">
+          <div class="d-flex justify-content-between align-items-center mb-3"><h4 class="mb-0"><span class="type-dot type-{{ color }}"></span>{{ title }}</h4><a href="{{ url_for('browse_items', type=kind) }}" class="small fw-semibold">See all</a></div>
+          {% for item in rows %}
+          <a href="{{ url_for('item_details', item_id=item.id) }}" class="mini-item">
+            <div class="mini-thumb">{{ item_thumb(item) }}</div>
+            <div class="flex-grow-1"><strong>{{ item.title }}</strong><span><i class="bi bi-geo-alt"></i> {{ item.location }}</span></div>
+            <small class="text-muted">{{ item.created_at|timeago }}</small>
+          </a>
+          {% else %}<p class="text-muted mb-0">No {{ kind }} items right now.</p>{% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="stats-band">
+  <div class="container"><div class="row text-center gy-4">
+    <div class="col-6 col-md-3"><strong data-count="{{ stats['items'] }}">{{ stats['items'] }}</strong><span>Total reports</span></div>
+    <div class="col-6 col-md-3"><strong data-count="{{ stats.found }}">{{ stats.found }}</strong><span>Items found</span></div>
+    <div class="col-6 col-md-3"><strong data-count="{{ stats.returned }}">{{ stats.returned }}</strong><span>Successfully returned</span></div>
+    <div class="col-6 col-md-3"><strong data-count="{{ stats.users }}">{{ stats.users }}</strong><span>Active students</span></div>
+  </div></div>
+</section>
+
+<section class="section">
+  <div class="container"><div class="cta-box reveal">
+    <div><h2>Found something? Lost something?</h2><p>Every report helps a fellow student. It takes less than two minutes.</p></div>
+    <div class="d-flex gap-2 flex-wrap"><a href="{{ url_for('report_found') }}" class="btn btn-teal btn-lg">Report found item</a><a href="{{ url_for('report_lost') }}" class="btn btn-light-outline btn-lg">Report lost item</a></div>
+  </div></div>
+</section>
+{% endblock %}

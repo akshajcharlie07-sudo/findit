@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, status_badge, empty_state with context %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<section class="container page-section">
+  <div class="d-flex justify-content-between flex-wrap gap-3 align-items-end page-head">
+    <div><h1>Hello, {{ g.user['full_name'].split()[0] }} 👋</h1><p class="text-muted mb-0">Here's what's happening with your reports.</p></div>
+    <div class="d-flex gap-2"><a href="{{ url_for('report_lost') }}" class="btn btn-outline-navy"><i class="bi bi-plus-lg"></i> Lost</a><a href="{{ url_for('report_found') }}" class="btn btn-teal"><i class="bi bi-plus-lg"></i> Found</a></div>
+  </div>
+  <div class="row g-3 mb-4">
+    {% for label, val, icon, cls in [('Total reported', stats.total, 'bi-collection','navy'),('Lost items', stats.lost, 'bi-exclamation-circle','lost'),('Found items', stats.found, 'bi-hand-thumbs-up','found'),('Pending claims', pending, 'bi-hourglass-split','warn')] %}
+    <div class="col-6 col-lg-3"><div class="stat-card stat-{{ cls }}"><i class="bi {{ icon }}"></i><div><strong data-count="{{ val }}">{{ val }}</strong><span>{{ label }}</span></div></div></div>
+    {% endfor %}
+  </div>
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="panel">
+        <div class="d-flex justify-content-between mb-3"><h5 class="mb-0">My recent reports</h5></div>
+        {% if mine %}
+        <div class="table-responsive"><table class="table align-middle table-findit">
+          <thead><tr><th>Item</th><th>Type</th><th>Status</th><th>Date</th><th></th></tr></thead>
+          <tbody>{% for i in mine %}
+            <tr><td><a href="{{ url_for('item_details', item_id=i.id) }}" class="fw-semibold">{{ i.title }}</a><div class="small text-muted">{{ i.location }}</div></td>
+              <td><span class="type-pill type-{{ i.type }} static">{{ i.type|capitalize }}</span></td><td>{{ status_badge(i.status) }}</td><td class="small">{{ i.created_at|timeago }}</td>
+              <td class="text-end"><form method="post" action="{{ url_for('delete_item', item_id=i.id) }}" onsubmit="return confirm('Delete this report?');">{{ csrf() }}<input type="hidden" name="next" value="{{ url_for('dashboard') }}"><button class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button></form></td></tr>
+          {% endfor %}</tbody></table></div>
+        {% else %}{{ empty_state('bi-inbox','No reports yet','Lost or found something? Post it and help the campus community.','Report an item',url_for('report_lost')) }}{% endif %}
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="panel mb-4">
+        <div class="d-flex justify-content-between mb-3"><h5 class="mb-0">Notifications</h5><a href="{{ url_for('notifications') }}" class="small fw-semibold">View all</a></div>
+        {% for n in notes %}<a class="note-item {{ '' if n.is_read else 'unread' }}" href="{{ n.link or url_for('notifications') }}"><span>{{ n.message }}</span><small>{{ n.created_at|timeago }}</small></a>{% else %}<p class="text-muted small mb-0">You're all caught up.</p>{% endfor %}
+      </div>
+      <div class="panel">
+        <h5 class="mb-3">Recent activity</h5>
+        <ul class="timeline">{% for a in activity %}<li><i class="bi {{ a.icon }}"></i><div><a href="{{ a.link }}">{{ a.text }}</a><small>{{ a.when|timeago }}</small></div></li>{% else %}<li class="text-muted small">No activity yet.</li>{% endfor %}</ul>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
